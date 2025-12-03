@@ -41,5 +41,28 @@ namespace GrpcCustomersService.Services
             db.SaveChanges();
             return Task.FromResult(new Empty());
         }
+        public override Task<Customer> Get(CustomerId requestData, ServerCallContext context)
+        {
+            var data = db.Customer.Find(requestData.Id);
+
+            Customer emp = new Customer()
+            {
+                CustomerId = data.CustomerID,
+                Name = data.Name,
+                Adress = data.Adress
+
+            };
+            return Task.FromResult(emp);
+        }
+
+        public override Task<Empty> Delete(CustomerId requestData, ServerCallContext
+       context)
+        {
+            var data = db.Customer.Find(requestData.Id);
+            db.Customer.Remove(data);
+
+            db.SaveChanges();
+            return Task.FromResult(new Empty());
+        }
     }
 }
