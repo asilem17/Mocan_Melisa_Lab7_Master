@@ -55,8 +55,7 @@ namespace GrpcCustomersService.Services
             return Task.FromResult(emp);
         }
 
-        public override Task<Empty> Delete(CustomerId requestData, ServerCallContext
-       context)
+        public override Task<Empty> Delete(CustomerId requestData, ServerCallContext context)
         {
             var data = db.Customer.Find(requestData.Id);
             db.Customer.Remove(data);
@@ -64,5 +63,29 @@ namespace GrpcCustomersService.Services
             db.SaveChanges();
             return Task.FromResult(new Empty());
         }
+        public override Task<Customer> Update(Customer requestData, ServerCallContext context)
+        {
+            var data = db.Customer.Find(requestData.CustomerId);
+            if (data == null) { throw new RpcException(new Status(StatusCode.NotFound, "Customer not found")); }
+            else
+            {
+                data.Name = requestData.Name;
+                data.Adress = requestData.Adress;
+                data.BirthDate = DateTime.Parse(requestData.Birthdate);
+
+                db.SaveChanges();
+                var updatedData = new Customer()
+                {
+                    CustomerId = data.CustomerID,
+                    Name = data.Name,
+                    Adress = data.Adress,
+                    Birthdate = data.BirthDate.ToString("yyyy-MM-dd")
+                };
+
+
+                return Task.FromResult(updatedData);
+            }
+        }
+
     }
 }

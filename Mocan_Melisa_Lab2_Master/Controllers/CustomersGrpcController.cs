@@ -58,5 +58,55 @@ namespace Mocan_Melisa_Lab2_Master.Controllers
             });
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpGet]
+        public IActionResult Edit(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var client = new CustomerService.CustomerServiceClient(channel);
+            GrpcCustomersService.Customer grpcCustomer = client.Get(new GrpcCustomersService.CustomerId() { Id = (int)id });
+
+            if (grpcCustomer == null)
+                return NotFound();
+
+            var customer = new Mocan_Melisa_Lab2_Master.Models.Customer
+            {
+                CustomerID = grpcCustomer.CustomerId,
+                Name = grpcCustomer.Name,
+                Adress = grpcCustomer.Adress,
+                BirthDate = string.IsNullOrEmpty(grpcCustomer.Birthdate) ? DateTime.Now : DateTime.Parse(grpcCustomer.Birthdate)
+
+            };
+            return View(customer);
+        }
+
+        [HttpPost]
+        public IActionResult Edit(int id, Mocan_Melisa_Lab2_Master.Models.Customer customer)
+        {
+            if(id != customer.CustomerID)
+            {
+                return NotFound();
+            }
+            if (ModelState.IsValid)
+            {
+                var client = new CustomerService.CustomerServiceClient(channel);
+
+                var grpcCustomer = new GrpcCustomersService.Customer
+                {
+                    CustomerId = customer.CustomerID,
+                    Name = customer.Name,
+                    Adress = customer.Adress,
+                    Birthdate = customer.BirthDate.ToString("yyyy-MM-dd")
+                };
+                var updatedCustomer = client.Update(grpcCustomer);
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(customer);
+        }
+
     }
 }
